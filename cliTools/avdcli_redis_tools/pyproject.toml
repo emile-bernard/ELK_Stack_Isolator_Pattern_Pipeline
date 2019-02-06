@@ -1,0 +1,23 @@
+[build-system]
+requires = ["flit"]
+build-backend = "flit.buildapi"
+
+[tool.flit.metadata]
+module = "avd_redis_tools"
+author = "Emile Bernard"
+author-email = "emile.bernard@dti.ulaval.ca"
+classifiers = ["License :: OSI Approved :: MIT License"]
+home-page = "https://gitea.avd.ulaval.ca/ember89/avdcli_redis_tools"
+
+requires-python=">=3.5"
+
+requires = [
+    "avdcli (>=1.0.2)",
+    "avdlogger (>=1.0.0)",
+    "plumbum",
+]
+
+# Uncomment to add command line interface with pip install
+[tool.flit.entrypoints.console_scripts]
+avd-redis-janitor = "avd_redis_tools:Janitor.run"
+avd-redis-publisher = "avd_redis_tools:Publisher.run"

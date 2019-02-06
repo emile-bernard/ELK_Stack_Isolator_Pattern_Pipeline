@@ -1,0 +1,28 @@
+metricbeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+
+metricbeat.modules:
+  - module: vsphere
+    enabled: true
+    metricsets: ["datastore", "host", "virtualmachine"]
+    period: 60s
+    hosts: ${VSPHEREHOST}
+    username: ${VSPHEREUID}
+    password: ${VSPHEREPWD}
+    #index: metricbeat-bphes
+    # If insecure is true, don't verify the server's certificate chain
+    insecure: true
+    # Get custom fields when using virtualmachine metric set. Default false.
+    # get_custom_fields: false
+processors:
+  - ? add_cloud_metadata
+
+setup.kibana:
+    host: "kibana:5601"
+  
+output.logstash:
+  hosts: ["proxy:5044"]
+  setup.template.json.enabled: true
+  setup.template.json.path: "template.json"
+  setup.template.json.name: "template-name"

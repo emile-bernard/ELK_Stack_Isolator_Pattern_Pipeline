@@ -1,0 +1,148 @@
+version: '3.2'
+
+services:
+
+  # kibanaProduction:
+  #   image: docker.elastic.co/kibana/kibana:6.4.1
+  #   container_name: kibanaProduction
+  #   restart: unless-stopped
+  #   ports:
+  #     - "5601:5601"
+  #   environment:
+  #     SERVER_NAME: kibanaProduction
+  #     ELASTICSEARCH_URL: http://elasticsearchproduction:9200 # Only use lower case url
+
+  # kibanaDevelopment:
+  #   image: docker.elastic.co/kibana/kibana:6.4.1
+  #   container_name: kibanaDevelopment
+  #   restart: unless-stopped
+  #   ports:
+  #     - "5602:5601"
+  #   environment:
+  #     SERVER_NAME: kibanaDevelopment
+  #     ELASTICSEARCH_URL: "http://elasticsearchdevelopment:9200" # Only use lower case url
+
+  # elasticsearchproduction:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
+  #   container_name: elasticsearchproduction
+  #   restart: unless-stopped
+  #   ulimits:
+  #     nofile:
+  #         soft: 65536
+  #         hard: 65536
+  #   volumes:
+  #     - ./elasticsearchProduction/config:/usr/share/elasticsearch/config
+
+  # elasticsearchdevelopment:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
+  #   container_name: elasticsearchdevelopment
+  #   restart: unless-stopped
+  #   ulimits:
+  #     nofile:
+  #         soft: 65536
+  #         hard: 65536
+  #   volumes:
+  #     - ./elasticsearchDevelopment/config:/usr/share/elasticsearch/config
+
+  logstashProduction:
+    image: docker.elastic.co/logstash/logstash:6.4.1
+    container_name: logstashProduction
+    restart: unless-stopped
+    volumes:
+      - ./logstashProduction/config:/usr/share/logstash/config
+      - ./logstashProduction/pipeline:/usr/share/logstash/pipeline
+
+  logstashDevelopment:
+    image: docker.elastic.co/logstash/logstash:6.4.1
+    container_name: logstashDevelopment
+    restart: unless-stopped
+    volumes:
+      - ./logstashDevelopment/config:/usr/share/logstash/config
+      - ./logstashDevelopment/pipeline:/usr/share/logstash/pipeline
+
+  redisProduction:
+    image: redis
+    container_name: redisProduction
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    ulimits:
+      nofile:
+          soft: 65536
+          hard: 65536
+    volumes:
+      - ./redisProduction:/usr/local/etc/redis/
+
+  redisDevelopment:
+    image: redis
+    container_name: redisDevelopment
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    ulimits:
+      nofile:
+          soft: 65536
+          hard: 65536
+    volumes:
+      - ./redisDevelopment:/usr/local/etc/redis/
+    deploy:
+      resources:
+        limits:
+          memory: 1M
+
+  proxy:
+    image: docker.elastic.co/logstash/logstash:6.4.1
+    container_name: proxy
+    restart: unless-stopped
+    volumes:
+      - ./proxy/config:/usr/share/logstash/config
+      - ./proxy/pipeline:/usr/share/logstash/pipeline
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:6.4.2
+    container_name: filebeat
+    restart: unless-stopped
+    entrypoint: "filebeat -e -strict.perms=false"
+    volumes:
+      - ./filebeat/config:/usr/share/filebeat
+
+
+  #  UNCOMMENT TO ENABLE METRICBEAT MODULE 
+
+  # metricbeat:
+  #   image: docker.elastic.co/beats/metricbeat:6.4.1
+  #   container_name: metricbeat
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./metricbeat/config/metricbeat:/usr/share/metricbeat
+  #   env_file:
+  #     - template-vsphere-variables.env
+
+#  UNCOMMENT TO ENABLE PACKETBEAT MODULE 
+
+  # packetbeat:
+  #   image: docker.elastic.co/beats/packetbeat:6.4.1
+  #   container_name: packetbeat
+  #   restart: unless-stopped
+  #   # Packetbeat needs some elevated privileges to capture network traffic.
+  #   # We'll grant them with POSIX capabilities.
+  #   cap_add: ['NET_RAW', 'NET_ADMIN']
+  #   # Use "host mode" networking to allow Packetbeat to capture traffic from
+  #   # the real network interface on the host, rather than being isolated to the
+  #   # container's virtual interface.
+  #   # network_mode: host
+  #   network_mode: "container:redis"
+  #   ## volumes:
+  #   ##   - ./packetbeat/config/packetbeat.yml:/usr/share/packetbeat/packetbeat.yml
+
+#  UNCOMMENT TO ENABLE AUDITBEAT MODULE 
+
+  # auditbeat:
+  #   image: docker.elastic.co/beats/auditbeat:6.4.1
+  #   container_name: auditbeat
+  #   restart: unless-stopped
+  #   cap_add: ['AUDIT_CONTROL', 'AUDIT_READ']
+  #    # Auditbeat must run in the main process namespace.
+  #   pid: host
+  #   ## volumes:
+  #   ##   - ./auditbeat/config/auditbeat.yml:/usr/share/auditbeat/auditbeat.yml

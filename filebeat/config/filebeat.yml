@@ -1,0 +1,41 @@
+filebeat.inputs:
+  # First prospector
+  - type: log
+    # Change to true to enable this input configuration.
+    enabled: true
+    # Paths that should be crawled and fetched. Glob based paths.
+    paths:
+      - /usr/share/filebeat/logs_ENA/accesMoc.log
+      # - /usr/share/filebeat/logs_ENA/*.log
+    fields:
+      apache: true
+      log_type: ENA
+    processors:
+      - drop_fields:
+          fields: ["verb", "id"]
+  # Second prospector
+  - type: log
+    # Change to true to enable this input configuration.
+    enabled: true
+    # Paths that should be crawled and fetched. Glob based paths.
+    paths:
+      - /usr/share/filebeat/logs_MPO/accesMoc.log
+      # - /usr/share/filebeat/logs_ENA/*.log
+    fields:
+      apache: true
+      log_type: MPO
+    processors:
+      - drop_fields:
+          fields: ["verb", "id"]
+
+filebeat.config.modules:
+  # Glob pattern for configuration loading
+  path: /usr/share/filebeat/config/modules.d/*.yml
+  # Set to true to enable config reloading
+  reload.enabled: false
+
+setup.template.settings:
+  index.number_of_shards: 3
+
+output.logstash:
+  hosts: ["proxy:5044"]
